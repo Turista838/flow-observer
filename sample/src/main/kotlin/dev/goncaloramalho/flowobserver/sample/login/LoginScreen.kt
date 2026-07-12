@@ -1,4 +1,4 @@
-package dev.goncaloramalho.flowobserver.sample
+package dev.goncaloramalho.flowobserver.sample.login
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,6 +20,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun LoginScreen(
+    onLoginSuccess: (String) -> Unit,
     viewModel: LoginViewModel = viewModel(),
     modifier: Modifier = Modifier,
 ) {
@@ -32,42 +33,31 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(text = "Flow Observer Demo")
+        Text(text = "Flow Observer")
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(text = "Log in to open the playground")
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         OutlinedTextField(
             value = uiState.username,
             onValueChange = viewModel::updateUsername,
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Username") },
-            enabled = !uiState.loading && !uiState.loggedIn,
+            enabled = !uiState.isLoading,
             singleLine = true,
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = viewModel::login,
+            onClick = { viewModel.login(onLoginSuccess) },
             modifier = Modifier.fillMaxWidth(),
-            enabled = uiState.username.isNotBlank() && !uiState.loading && !uiState.loggedIn,
+            enabled = uiState.username.isNotBlank() && !uiState.isLoading,
         ) {
-            Text(if (uiState.loading) "Logging in…" else "Login")
+            Text(if (uiState.isLoading) "Logging in…" else "Login")
         }
-
-        if (uiState.loggedIn) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "Logged in as ${uiState.username}")
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = viewModel::reset) {
-                Text("Reset")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = "Check Logcat for FlowObserver output",
-            modifier = Modifier.padding(top = 8.dp),
-        )
     }
 }

@@ -10,6 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import dev.goncaloramalho.flowobserver.generated.FlowObserverMaster
+import dev.goncaloramalho.flowobserver.sample.navigation.AppNavigation
 import dev.goncaloramalho.flowobserver.sample.ui.theme.FlowObserverTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,7 +21,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             FlowObserverTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    LoginScreen(modifier = Modifier.padding(innerPadding))
+                    AppNavigation(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
