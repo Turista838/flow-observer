@@ -23,4 +23,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "flow-observer"
-include(":sample")
+include(":flow-observer-annotations", ":flow-observer-processor", ":sample")
