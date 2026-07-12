@@ -4,5 +4,4 @@ package dev.goncaloramalho.flowobserver
 @Retention(AnnotationRetention.SOURCE)
 annotation class FlowObserver(
     val tag: String = "",
-    val logInitial: Boolean = false,
 )

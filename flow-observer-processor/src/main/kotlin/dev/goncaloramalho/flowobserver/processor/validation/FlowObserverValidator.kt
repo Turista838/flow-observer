@@ -87,7 +87,6 @@ internal class FlowObserverValidator(
                     propertyName = propertyName,
                     flowKind = flowKind,
                     tag = tag,
-                    logInitial = annotation.logInitial,
                     property = property,
                 )
         }

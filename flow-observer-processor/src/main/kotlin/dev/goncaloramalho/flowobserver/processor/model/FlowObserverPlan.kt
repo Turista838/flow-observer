@@ -21,7 +21,6 @@ internal data class LoggedFlow(
     val propertyName: String,
     val flowKind: FlowKind,
     val tag: String,
-    val logInitial: Boolean,
     val property: KSPropertyDeclaration,
 )
 

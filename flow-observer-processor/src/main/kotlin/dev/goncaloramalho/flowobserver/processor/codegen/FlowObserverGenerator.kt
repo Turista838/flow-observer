@@ -52,24 +52,35 @@ internal class FlowObserverGenerator(
     }
 
     private fun generateFlowCollector(flow: LoggedFlow): String {
+        return when (flow.flowKind) {
+            FlowKind.STATE_FLOW -> generateStateFlowCollector(flow)
+            FlowKind.SHARED_FLOW -> generateSharedFlowCollector(flow)
+        }
+    }
+
+    private fun generateStateFlowCollector(flow: LoggedFlow): String {
         val previousVar = previousVarName(flow.propertyName)
         val nextVar = nextVarName(flow.propertyName)
         val tag = escape(flow.tag)
-        val dropInitial = !flow.logInitial
-
-        val previousInit = when (flow.flowKind) {
-            FlowKind.STATE_FLOW -> "    var $previousVar = ${flow.propertyName}.value"
-            FlowKind.SHARED_FLOW -> "    var $previousVar: Any? = null"
-        }
-
-        val dropLine = if (dropInitial) "\n        .drop(1)" else ""
-
         return """
-            |$previousInit
-            |    ${flow.propertyName}$dropLine
+            |    var $previousVar = ${flow.propertyName}.value
+            |    ${flow.propertyName}
+            |        .drop(1)
             |        .onEach { $nextVar ->
             |            Log.i("$tag", "change { previousState: ${'$'}$previousVar, currentState: ${'$'}$nextVar }")
             |            $previousVar = $nextVar
+            |        }
+            |        .launchIn(scope)
+        """.trimMargin()
+    }
+
+    private fun generateSharedFlowCollector(flow: LoggedFlow): String {
+        val tag = escape(flow.tag)
+
+        return """
+            |    ${flow.propertyName}
+            |        .onEach { value ->
+            |            Log.i("$tag", "event { ${'$'}value }")
             |        }
             |        .launchIn(scope)
         """.trimMargin()
