@@ -37,12 +37,12 @@ internal class FlowObserverGenerator(
                 |package ${plan.packageName}
                 |
                 |import android.util.Log
-                |import kotlinx.coroutines.CoroutineScope
+                |import androidx.lifecycle.viewModelScope
                 |import kotlinx.coroutines.flow.drop
                 |import kotlinx.coroutines.flow.launchIn
                 |import kotlinx.coroutines.flow.onEach
                 |
-                |internal fun ${plan.className}.attachFlowObserverGenerated(scope: CoroutineScope) {
+                |internal fun ${plan.className}.attachFlowObserverGenerated() {
                 |$flowBlocks
                 |}
             """.trimMargin(),
@@ -70,7 +70,7 @@ internal class FlowObserverGenerator(
             |            Log.i("$tag", "change { previousState: ${'$'}$previousVar, currentState: ${'$'}$nextVar }")
             |            $previousVar = $nextVar
             |        }
-            |        .launchIn(scope)
+            |        .launchIn(viewModelScope)
         """.trimMargin()
     }
 
@@ -82,7 +82,7 @@ internal class FlowObserverGenerator(
             |        .onEach { value ->
             |            Log.i("$tag", "event { ${'$'}value }")
             |        }
-            |        .launchIn(scope)
+            |        .launchIn(viewModelScope)
         """.trimMargin()
     }
 
@@ -101,8 +101,9 @@ internal class FlowObserverGenerator(
         }
         val attachCalls = plan.viewModels.joinToString("\n") { vm ->
             """
-                |        ViewModelProvider(activity)[${vm.className}::class.java]
-                |            .attachFlowObserverGenerated(scope)
+                |        attach(ViewModelProvider(activity)[${vm.className}::class.java]) {
+                |            it.attachFlowObserverGenerated()
+                |        }
             """.trimMargin()
         }
 
@@ -115,19 +116,24 @@ internal class FlowObserverGenerator(
                 |package ${Fqns.GENERATED_PACKAGE}
                 |
                 |import androidx.activity.ComponentActivity
+                |import androidx.lifecycle.ViewModel
                 |import androidx.lifecycle.ViewModelProvider
-                |import kotlinx.coroutines.CoroutineScope
+                |import java.util.Collections
+                |import java.util.WeakHashMap
                 |$vmImports
                 |$extensionImports
                 |
                 |object FlowObserverMaster {
                 |
-                |    private var attached = false
+                |    private val attached = Collections.newSetFromMap(WeakHashMap<ViewModel, Boolean>())
                 |
-                |    fun attachAll(activity: ComponentActivity, scope: CoroutineScope) {
-                |        if (attached) return
-                |        attached = true
+                |    fun attachAll(activity: ComponentActivity) {
                 |$attachCalls
+                |    }
+                |
+                |    private inline fun <T : ViewModel> attach(viewModel: T, block: (T) -> Unit) {
+                |        if (!attached.add(viewModel)) return
+                |        block(viewModel)
                 |    }
                 |}
             """.trimMargin(),
