@@ -11,11 +11,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -41,15 +41,14 @@ fun PlaygroundScreen(
     ) {
         Text(text = "Playground")
         Text(text = "Logged in as $username")
-        Text(text = "Filter Logcat: LoginViewModel, PlaygroundViewModel, Playground.ticks, Playground.pulses")
 
-        Button(onClick = onOpenScreenScopedVm, modifier = Modifier.fillMaxWidth()) {
-            Text("Open screen-scoped ViewModel")
+        FilledTonalButton(onClick = onOpenScreenScopedVm, modifier = Modifier.fillMaxWidth()) {
+            Text("Open scoped-VM screen")
         }
 
         HorizontalDivider()
 
-        Text(text = "StateFlow — PlaygroundViewModel.uiState")
+        Text(text = "StateFlow")
         Text(text = "Counter: ${uiState.counter}")
         Text(text = "Ticker: ${if (uiState.isTickerRunning) "running" else "stopped"}")
         Text(text = "Status: ${uiState.statusMessage}")
@@ -75,7 +74,7 @@ fun PlaygroundScreen(
 
         HorizontalDivider()
 
-        Text(text = "SharedFlow — Playground.ticks (every 3s)")
+        Text(text = "SharedFlow — ticks")
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -98,7 +97,7 @@ fun PlaygroundScreen(
 
         HorizontalDivider()
 
-        Text(text = "SharedFlow — Playground.pulses (one-shot)")
+        Text(text = "SharedFlow — pulses")
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),

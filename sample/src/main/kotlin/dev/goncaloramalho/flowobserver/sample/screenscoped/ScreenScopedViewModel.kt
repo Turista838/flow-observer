@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.asStateFlow
 
 data class ScreenScopedUiState(
     val taps: Int = 0,
-    val label: String = "Fresh instance",
 )
 
 /**
@@ -26,14 +25,10 @@ class ScreenScopedViewModel : ViewModel() {
     }
 
     fun tap() {
-        val next = _uiState.value.taps + 1
-        _uiState.value = ScreenScopedUiState(
-            taps = next,
-            label = "Tap #$next on this instance",
-        )
+        _uiState.value = _uiState.value.copy(taps = _uiState.value.taps + 1)
     }
 
     fun reset() {
-        _uiState.value = ScreenScopedUiState(label = "Reset on this instance")
+        _uiState.value = ScreenScopedUiState()
     }
 }
