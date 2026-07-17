@@ -20,6 +20,10 @@ class LoginViewModel : ViewModel() {
     @FlowObserver
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
+    init {
+        attachFlowObserver()
+    }
+
     fun updateUsername(username: String) {
         _uiState.value = _uiState.value.copy(username = username)
     }

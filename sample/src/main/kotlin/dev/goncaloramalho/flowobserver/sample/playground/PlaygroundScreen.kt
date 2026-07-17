@@ -15,6 +15,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -25,6 +26,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun PlaygroundScreen(
     username: String,
     onLogout: () -> Unit,
+    onOpenScreenScopedVm: () -> Unit,
     viewModel: PlaygroundViewModel = viewModel(),
     modifier: Modifier = Modifier,
 ) {
@@ -40,6 +42,10 @@ fun PlaygroundScreen(
         Text(text = "Playground")
         Text(text = "Logged in as $username")
         Text(text = "Filter Logcat: LoginViewModel, PlaygroundViewModel, Playground.ticks, Playground.pulses")
+
+        Button(onClick = onOpenScreenScopedVm, modifier = Modifier.fillMaxWidth()) {
+            Text("Open screen-scoped ViewModel")
+        }
 
         HorizontalDivider()
 

@@ -36,6 +36,10 @@ class PlaygroundViewModel : ViewModel() {
     private var tickerJob: Job? = null
     private var pulseCount = 0
 
+    init {
+        attachFlowObserver()
+    }
+
     fun increment() {
         _uiState.value = _uiState.value.copy(counter = _uiState.value.counter + 1)
     }

@@ -8,14 +8,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import dev.goncaloramalho.flowobserver.generated.FlowObserverMaster
 import dev.goncaloramalho.flowobserver.sample.navigation.AppNavigation
 import dev.goncaloramalho.flowobserver.sample.ui.theme.FlowObserverTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        FlowObserverMaster.attachAll(this)
         enableEdgeToEdge()
         setContent {
             FlowObserverTheme {

@@ -38,9 +38,14 @@ internal class FlowObserverGenerator(
                 |
                 |import android.util.Log
                 |import androidx.lifecycle.viewModelScope
+                |import ${Fqns.GENERATED_PACKAGE}.FlowObserverMaster
                 |import kotlinx.coroutines.flow.drop
                 |import kotlinx.coroutines.flow.launchIn
                 |import kotlinx.coroutines.flow.onEach
+                |
+                |fun ${plan.className}.attachFlowObserver() {
+                |    FlowObserverMaster.attach(this)
+                |}
                 |
                 |internal fun ${plan.className}.attachFlowObserverGenerated() {
                 |$flowBlocks
@@ -99,12 +104,8 @@ internal class FlowObserverGenerator(
         val extensionImports = plan.viewModels.joinToString("\n") {
             "import ${it.packageName}.attachFlowObserverGenerated"
         }
-        val attachCalls = plan.viewModels.joinToString("\n") { vm ->
-            """
-                |        attach(ViewModelProvider(activity)[${vm.className}::class.java]) {
-                |            it.attachFlowObserverGenerated()
-                |        }
-            """.trimMargin()
+        val whenBranches = plan.viewModels.joinToString("\n") { vm ->
+            "            is ${vm.className} -> viewModel.attachFlowObserverGenerated()"
         }
 
         writeFile(
@@ -115,9 +116,7 @@ internal class FlowObserverGenerator(
             content = """
                 |package ${Fqns.GENERATED_PACKAGE}
                 |
-                |import androidx.activity.ComponentActivity
                 |import androidx.lifecycle.ViewModel
-                |import androidx.lifecycle.ViewModelProvider
                 |import java.util.Collections
                 |import java.util.WeakHashMap
                 |$vmImports
@@ -127,13 +126,16 @@ internal class FlowObserverGenerator(
                 |
                 |    private val attached = Collections.newSetFromMap(WeakHashMap<ViewModel, Boolean>())
                 |
-                |    fun attachAll(activity: ComponentActivity) {
-                |$attachCalls
+                |    fun attach(viewModel: ViewModel) {
+                |        if (!attached.add(viewModel)) return
+                |        when (viewModel) {
+                |$whenBranches
+                |            else -> Unit
+                |        }
                 |    }
                 |
-                |    private inline fun <T : ViewModel> attach(viewModel: T, block: (T) -> Unit) {
-                |        if (!attached.add(viewModel)) return
-                |        block(viewModel)
+                |    fun attachAll(vararg viewModels: ViewModel) {
+                |        viewModels.forEach { attach(it) }
                 |    }
                 |}
             """.trimMargin(),
