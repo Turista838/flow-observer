@@ -68,7 +68,13 @@ internal class FlowObserverGenerator(
             |        .drop(1)
             |        .onEach { $nextVar ->
             |            if (FlowObserver.settings.enabled) {
-            |                Log.i("$tag", "change { previousState: ${'$'}$previousVar, currentState: ${'$'}$nextVar }")
+            |                val message = "change { previousState: ${'$'}$previousVar, currentState: ${'$'}$nextVar }"
+            |                val logger = FlowObserver.settings.logger
+            |                if (logger != null) {
+            |                    logger.log("$tag", message)
+            |                } else {
+            |                    Log.i("$tag", message)
+            |                }
             |            }
             |            $previousVar = $nextVar
             |        }
@@ -83,7 +89,13 @@ internal class FlowObserverGenerator(
             |    ${flow.propertyName}
             |        .onEach { value ->
             |            if (!FlowObserver.settings.enabled) return@onEach
-            |            Log.i("$tag", "event { ${'$'}value }")
+            |            val message = "event { ${'$'}value }"
+            |            val logger = FlowObserver.settings.logger
+            |            if (logger != null) {
+            |                logger.log("$tag", message)
+            |            } else {
+            |                Log.i("$tag", message)
+            |            }
             |        }
             |        .launchIn(viewModelScope)
         """.trimMargin()
