@@ -7,7 +7,7 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
-import dev.goncaloramalho.flowobserver.FlowObserver
+import dev.goncaloramalho.flowobserver.ObserveFlow
 import dev.goncaloramalho.flowobserver.processor.model.FlowKind
 import dev.goncaloramalho.flowobserver.processor.model.FlowObserverPlan
 import dev.goncaloramalho.flowobserver.processor.model.LoggedFlow
@@ -26,7 +26,7 @@ internal class FlowObserverValidator(
 ) {
     fun validate(resolver: Resolver): FlowObserverPlan {
         val annotatedProperties = resolver
-            .getSymbolsWithAnnotation(Fqns.FLOW_OBSERVER)
+            .getSymbolsWithAnnotation(Fqns.OBSERVE_FLOW)
             .filterIsInstance<KSPropertyDeclaration>()
             .toList()
 
@@ -40,13 +40,13 @@ internal class FlowObserverValidator(
         for (property in annotatedProperties) {
             val parent = property.parentDeclaration as? KSClassDeclaration
             if (parent == null) {
-                logger.error("@FlowObserver must be on a property inside a class", property)
+                logger.error("@ObserveFlow must be on a property inside a class", property)
                 continue
             }
 
             if (!parent.extendsViewModel()) {
                 logger.error(
-                    "@FlowObserver property ${property.fqn()} must be declared in a ViewModel " +
+                    "@ObserveFlow property ${property.fqn()} must be declared in a ViewModel " +
                         "(extends androidx.lifecycle.ViewModel)",
                     property,
                 )
@@ -55,7 +55,7 @@ internal class FlowObserverValidator(
 
             if (property.isPrivate()) {
                 logger.error(
-                    "@FlowObserver property ${property.simpleName.asString()} must not be private; " +
+                    "@ObserveFlow property ${property.simpleName.asString()} must not be private; " +
                         "annotate the public StateFlow/SharedFlow instead",
                     property,
                 )
@@ -63,7 +63,7 @@ internal class FlowObserverValidator(
             }
 
             val flowType = resolveFlowType(property) ?: continue
-            val annotation = property.getAnnotationsByType(FlowObserver::class).firstOrNull()
+            val annotation = property.getAnnotationsByType(ObserveFlow::class).firstOrNull()
                 ?: continue
 
             val propertyName = property.simpleName.asString()
@@ -73,7 +73,7 @@ internal class FlowObserverValidator(
                 Fqns.SHARED_FLOW -> FlowKind.SHARED_FLOW
                 else -> {
                     logger.error(
-                        "@FlowObserver property $propertyName must be StateFlow or SharedFlow",
+                        "@ObserveFlow property $propertyName must be StateFlow or SharedFlow",
                         property,
                     )
                     continue
@@ -102,7 +102,7 @@ internal class FlowObserverValidator(
         }
 
         logger.warn(
-            "FlowObserver: found ${viewModels.size} view model(s) with " +
+            "ObserveFlow: found ${viewModels.size} view model(s) with " +
                 "${viewModels.sumOf { it.flows.size }} annotated flow(s)",
         )
 
@@ -115,7 +115,7 @@ internal class FlowObserverValidator(
         if (flowFqn != null) return type
 
         logger.error(
-            "@FlowObserver property ${property.simpleName.asString()} must be StateFlow or SharedFlow, " +
+            "@ObserveFlow property ${property.simpleName.asString()} must be StateFlow or SharedFlow, " +
                 "found ${type.declaration.qualifiedName?.asString()}",
             property,
         )

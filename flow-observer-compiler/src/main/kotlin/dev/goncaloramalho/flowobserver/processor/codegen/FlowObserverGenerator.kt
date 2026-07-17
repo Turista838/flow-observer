@@ -18,7 +18,6 @@ internal class FlowObserverGenerator(
         for (viewModelPlan in plan.viewModels) {
             generateViewModelExtensions(viewModelPlan, originatingFiles)
         }
-        generateMaster(plan, originatingFiles)
     }
 
     private fun generateViewModelExtensions(
@@ -38,16 +37,12 @@ internal class FlowObserverGenerator(
                 |
                 |import android.util.Log
                 |import androidx.lifecycle.viewModelScope
-                |import ${Fqns.GENERATED_PACKAGE}.FlowObserverMaster
+                |import ${Fqns.FLOW_OBSERVER}
                 |import kotlinx.coroutines.flow.drop
                 |import kotlinx.coroutines.flow.launchIn
                 |import kotlinx.coroutines.flow.onEach
                 |
                 |fun ${plan.className}.attachFlowObserver() {
-                |    FlowObserverMaster.attach(this)
-                |}
-                |
-                |internal fun ${plan.className}.attachFlowObserverGenerated() {
                 |$flowBlocks
                 |}
             """.trimMargin(),
@@ -72,7 +67,9 @@ internal class FlowObserverGenerator(
             |    ${flow.propertyName}
             |        .drop(1)
             |        .onEach { $nextVar ->
-            |            Log.i("$tag", "change { previousState: ${'$'}$previousVar, currentState: ${'$'}$nextVar }")
+            |            if (FlowObserver.settings.enabled) {
+            |                Log.i("$tag", "change { previousState: ${'$'}$previousVar, currentState: ${'$'}$nextVar }")
+            |            }
             |            $previousVar = $nextVar
             |        }
             |        .launchIn(viewModelScope)
@@ -85,6 +82,7 @@ internal class FlowObserverGenerator(
         return """
             |    ${flow.propertyName}
             |        .onEach { value ->
+            |            if (!FlowObserver.settings.enabled) return@onEach
             |            Log.i("$tag", "event { ${'$'}value }")
             |        }
             |        .launchIn(viewModelScope)
@@ -96,53 +94,6 @@ internal class FlowObserverGenerator(
 
     private fun nextVarName(propertyName: String): String =
         "next${propertyName.replaceFirstChar { char -> char.uppercaseChar() }}"
-
-    private fun generateMaster(plan: FlowObserverPlan, originatingFiles: Array<KSFile>) {
-        val vmImports = plan.viewModels.joinToString("\n") {
-            "import ${it.qualifiedName}"
-        }
-        val extensionImports = plan.viewModels.joinToString("\n") {
-            "import ${it.packageName}.attachFlowObserverGenerated"
-        }
-        val whenBranches = plan.viewModels.joinToString("\n") { vm ->
-            "            is ${vm.className} -> viewModel.attachFlowObserverGenerated()"
-        }
-
-        writeFile(
-            packageName = Fqns.GENERATED_PACKAGE,
-            fileName = "FlowObserverMaster",
-            originatingFiles = originatingFiles,
-            aggregating = true,
-            content = """
-                |package ${Fqns.GENERATED_PACKAGE}
-                |
-                |import androidx.lifecycle.ViewModel
-                |import java.util.Collections
-                |import java.util.WeakHashMap
-                |$vmImports
-                |$extensionImports
-                |
-                |object FlowObserverMaster {
-                |
-                |    private val attached = Collections.newSetFromMap(WeakHashMap<ViewModel, Boolean>())
-                |
-                |    fun attach(viewModel: ViewModel) {
-                |        if (!attached.add(viewModel)) return
-                |        when (viewModel) {
-                |$whenBranches
-                |            else -> Unit
-                |        }
-                |    }
-                |
-                |    fun attachAll(vararg viewModels: ViewModel) {
-                |        viewModels.forEach { attach(it) }
-                |    }
-                |}
-            """.trimMargin(),
-        )
-
-        logger.warn("Generated FlowObserverMaster for ${plan.viewModels.size} view model(s)")
-    }
 
     private fun escape(value: String): String =
         value.replace("\\", "\\\\").replace("\"", "\\\"")

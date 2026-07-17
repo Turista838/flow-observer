@@ -1,7 +1,7 @@
 package dev.goncaloramalho.flowobserver.sample.screenscoped
 
 import androidx.lifecycle.ViewModel
-import dev.goncaloramalho.flowobserver.FlowObserver
+import dev.goncaloramalho.flowobserver.ObserveFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +18,7 @@ data class ScreenScopedUiState(
 class ScreenScopedViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(ScreenScopedUiState())
-    @FlowObserver(tag = "ScreenScopedViewModel.uiState")
+    @ObserveFlow(tag = "ScreenScopedViewModel.uiState")
     val uiState: StateFlow<ScreenScopedUiState> = _uiState.asStateFlow()
 
     init {

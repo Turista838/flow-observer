@@ -2,7 +2,7 @@ package dev.goncaloramalho.flowobserver.sample.playground
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dev.goncaloramalho.flowobserver.FlowObserver
+import dev.goncaloramalho.flowobserver.ObserveFlow
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -22,15 +22,15 @@ data class PlaygroundUiState(
 class PlaygroundViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(PlaygroundUiState())
-    @FlowObserver
+    @ObserveFlow
     val uiState: StateFlow<PlaygroundUiState> = _uiState.asStateFlow()
 
     private val _ticks = MutableSharedFlow<Long>(extraBufferCapacity = 1)
-    @FlowObserver(tag = "Playground.ticks")
+    @ObserveFlow(tag = "Playground.ticks")
     val ticks: SharedFlow<Long> = _ticks.asSharedFlow()
 
     private val _pulses = MutableSharedFlow<String>(extraBufferCapacity = 8)
-    @FlowObserver(tag = "Playground.pulses")
+    @ObserveFlow(tag = "Playground.pulses")
     val pulses: SharedFlow<String> = _pulses.asSharedFlow()
 
     private var tickerJob: Job? = null

@@ -15,6 +15,6 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":flow-observer-annotations"))
+    implementation(project(":flow-observer"))
     implementation("com.google.devtools.ksp:symbol-processing-api:${libs.versions.ksp.get()}")
 }

@@ -2,6 +2,6 @@ package dev.goncaloramalho.flowobserver
 
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.SOURCE)
-annotation class FlowObserver(
+annotation class ObserveFlow(
     val tag: String = "",
 )

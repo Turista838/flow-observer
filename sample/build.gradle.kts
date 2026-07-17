@@ -44,8 +44,8 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":flow-observer-annotations"))
-    ksp(project(":flow-observer-processor"))
+    implementation(project(":flow-observer"))
+    ksp(project(":flow-observer-compiler"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

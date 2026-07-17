@@ -2,7 +2,7 @@ package dev.goncaloramalho.flowobserver.sample.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dev.goncaloramalho.flowobserver.FlowObserver
+import dev.goncaloramalho.flowobserver.ObserveFlow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +17,7 @@ data class LoginUiState(
 class LoginViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
-    @FlowObserver
+    @ObserveFlow
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
     init {
