@@ -1,6 +1,9 @@
+import org.gradle.plugins.signing.SigningExtension
+
 plugins {
     id("java-library")
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.maven.publish)
 }
 
 java {
@@ -12,4 +15,13 @@ kotlin {
     compilerOptions {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
     }
+}
+
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+}
+
+extensions.configure<SigningExtension>("signing") {
+    useGpgCmd()
 }

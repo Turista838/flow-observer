@@ -12,6 +12,7 @@ navigationCompose = "2.8.9"
 kotlin = "2.2.10"
 ksp = "2.2.10-2.0.2"
 composeBom = "2026.02.01"
+mavenPublish = "0.34.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -38,5 +39,6 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 

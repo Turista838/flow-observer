@@ -1,6 +1,9 @@
+import org.gradle.plugins.signing.SigningExtension
+
 plugins {
     id("java-library")
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.maven.publish)
 }
 
 java {
@@ -17,4 +20,13 @@ kotlin {
 dependencies {
     implementation(project(":flow-observer"))
     implementation("com.google.devtools.ksp:symbol-processing-api:${libs.versions.ksp.get()}")
+}
+
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+}
+
+extensions.configure<SigningExtension>("signing") {
+    useGpgCmd()
 }
