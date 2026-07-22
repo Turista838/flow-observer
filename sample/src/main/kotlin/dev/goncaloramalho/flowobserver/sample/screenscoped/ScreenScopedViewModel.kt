@@ -16,8 +16,8 @@ data class ScreenScopedUiState(
  */
 class ScreenScopedViewModel : ViewModel() {
 
+    @ObserveFlow(tag = "ScreenScopedViewModel.uiState")
     private val _uiState = MutableStateFlow(ScreenScopedUiState())
-    @ObserveFlow(tag = "My_custom_tag")
     val uiState: StateFlow<ScreenScopedUiState> = _uiState.asStateFlow()
 
     fun tap() {

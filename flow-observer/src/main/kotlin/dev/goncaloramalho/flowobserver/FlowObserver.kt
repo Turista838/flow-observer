@@ -4,7 +4,7 @@ package dev.goncaloramalho.flowobserver
  * Global entry point for Flow Observer configuration.
  *
  * Call [configure] once at app startup (for example in `Application.onCreate`).
- * [addObservable] wrappers read [settings] when emitting logs.
+ * Emit-side [addObservable] wrappers read [settings] when logging writes.
  */
 object FlowObserver {
 

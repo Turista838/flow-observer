@@ -22,16 +22,16 @@ data class PlaygroundUiState(
 
 class PlaygroundViewModel : ViewModel() {
 
-    private val _uiState = MutableStateFlow(PlaygroundUiState())
     @ObserveFlow
+    private val _uiState = MutableStateFlow(PlaygroundUiState())
     val uiState: StateFlow<PlaygroundUiState> = _uiState.asStateFlow()
 
+    @ObserveFlow(tag = "Playground.ticks")
     private val _ticks = MutableSharedFlow<Long>(extraBufferCapacity = 1)
-    @ObserveFlow(tag = "Playground_ticks")
     val ticks: SharedFlow<Long> = _ticks.asSharedFlow()
 
+    @ObserveFlow(tag = "Playground.pulses")
     private val _pulses = MutableSharedFlow<String>(extraBufferCapacity = 8)
-    @ObserveFlow(tag = "Playground_pulses")
     val pulses: SharedFlow<String> = _pulses.asSharedFlow()
 
     private var tickerJob: Job? = null

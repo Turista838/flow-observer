@@ -1,12 +1,8 @@
 # flow-observer
 
-Kotlin library + compiler plugin for observing `StateFlow` and `SharedFlow` changes in Android ViewModels.
+Kotlin library + compiler plugin for observing `MutableStateFlow` and `MutableSharedFlow` writes in Android ViewModels (BlocObserver-style).
 
-Annotate the flows you care about. The compiler plugin injects `.addObservable(tag)` into the property initializer so logging runs on the **same collect chain** as your UI (no extra forever subscriber, no `attachFlowObserver()`).
-
-> **Logging only happens while something is collecting the flow.**  
-> No collector (UI, `LaunchedEffect`, tests, …) → no logs, even if the upstream emits.  
-> That keeps `SharingStarted.WhileSubscribed` correct: the observer is not a hidden subscriber.
+Annotate the **mutable** backing properties. The compiler plugin injects `.addObservable(tag)` so each `value` / `emit` / `update` / `tryEmit` is logged **once on the emit side** — not once per collector.
 
 ## Setup
 
@@ -21,39 +17,40 @@ Use a Kotlin version compatible with the compiler plugin (this project targets K
 
 ## Usage
 
-### Annotate flows
+### Annotate mutable flows
 
 ```kotlin
 class LoginViewModel : ViewModel() {
 
-    private val _uiState = MutableStateFlow(LoginUiState())
-
     @ObserveFlow
+    private val _uiState = MutableStateFlow(LoginUiState())
+    // compiler rewrites to: MutableStateFlow(...).addObservable(tag = "LoginViewModel._uiState")
+
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
-    // compiler rewrites to: _uiState.asStateFlow().addObservable(tag = "LoginViewModel.uiState")
 }
 ```
 
-- Annotate a **public** `StateFlow` or `SharedFlow` only.
+- Annotate **`MutableStateFlow` / `MutableSharedFlow`** (typically the private `_uiState` / `_events`).
+- Expose read-only `asStateFlow()` / `asSharedFlow()` as usual (no annotation on those).
 - If `tag` is omitted, defaults to `ClassName.propertyName`.
-- Do **not** call `attachFlowObserver()` — that API is gone.
-- You may call `addObservable(tag)` manually if you prefer; the plugin skips already-wrapped initializers.
-- **Collect the flow** (e.g. `collectAsStateWithLifecycle()`) or nothing will be logged.
+- You may call `addObservable(tag)` manually; the plugin skips already-wrapped initializers.
+- `stateIn` / `shareIn` results are **not** supported (no mutable write path to hook).
 
 ### When logging runs
 
 | Situation | Logs? |
 |-----------|--------|
-| UI / code is collecting the annotated flow | **Yes** (on delivered emissions) |
-| Annotated flow has zero collectors | **No** |
+| You write via `value` / `update` / `emit` / `tryEmit` on the annotated mutable | **Yes** (once per write) |
+| Many collectors listen to `asStateFlow()` / `asSharedFlow()` | Still **one** log per write |
+| Nobody is collecting | Still **yes** (same as BlocObserver) |
 | `FlowObserverSettings.enabled = false` | **No** |
 
 ### What gets logged
 
 | Flow | Message shape |
 |------|----------------|
-| `StateFlow` | `change { previousState: …, currentState: … }` |
-| `SharedFlow` | `event { … }` |
+| `MutableStateFlow` | `change { previousState: …, currentState: … }` |
+| `MutableSharedFlow` | `event { … }` |
 
 ## Configuration
 
@@ -79,12 +76,12 @@ If you never call `configure`, defaults apply: observation is **enabled**, and m
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `enabled` | `true` | When `false`, collectors still run but nothing is logged. Use `BuildConfig.DEBUG` to keep release builds quiet. |
+| `enabled` | `true` | When `false`, writes are not logged. Use `BuildConfig.DEBUG` to keep release builds quiet. |
 | `logger` | `null` | Custom log sink. When `null`, uses `Log.i` on Android or stdout on JVM. |
 
 ## Sample
 
-The `:sample` module shows Activity-scoped ViewModels, a Nav destination with a screen-scoped ViewModel, `WhileSubscribed` sharing, and configuration with `BuildConfig.DEBUG` plus a `Log.d` logger.
+The `:sample` module shows Activity-scoped ViewModels, a Nav destination with a screen-scoped ViewModel, and configuration with `BuildConfig.DEBUG` plus a `Log.d` logger.
 
 ## License
 

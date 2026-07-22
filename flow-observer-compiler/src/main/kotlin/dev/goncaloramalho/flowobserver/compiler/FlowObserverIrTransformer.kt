@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.ir.types.IrSimpleType
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.IrTypeProjection
 import org.jetbrains.kotlin.ir.types.classFqName
+import org.jetbrains.kotlin.ir.types.isSubtypeOfClass
 import org.jetbrains.kotlin.ir.util.fqNameWhenAvailable
 import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isSubclassOf
@@ -41,8 +42,14 @@ class FlowObserverIrTransformer(
             Name.identifier("addObservable"),
         )
 
-    private val stateFlowFqName = FqName("kotlinx.coroutines.flow.StateFlow")
-    private val sharedFlowFqName = FqName("kotlinx.coroutines.flow.SharedFlow")
+    private val mutableStateFlowClassId =
+        ClassId(FqName("kotlinx.coroutines.flow"), Name.identifier("MutableStateFlow"))
+
+    private val mutableSharedFlowClassId =
+        ClassId(FqName("kotlinx.coroutines.flow"), Name.identifier("MutableSharedFlow"))
+
+    private val mutableStateFlowFqName = mutableStateFlowClassId.asSingleFqName()
+    private val mutableSharedFlowFqName = mutableSharedFlowClassId.asSingleFqName()
 
     private val viewModelClassId =
         ClassId(FqName("androidx.lifecycle"), Name.identifier("ViewModel"))
@@ -144,21 +151,23 @@ class FlowObserverIrTransformer(
 
     private fun resolveAddObservable(flowKind: FlowKind) =
         pluginContext.referenceFunctions(addObservableCallableId).firstOrNull { symbol ->
-            val extensionType = symbol.owner.parameters
+            val extensionFqName = symbol.owner.parameters
                 .firstOrNull { it.kind == IrParameterKind.ExtensionReceiver }
                 ?.type
-            val extensionFqName = extensionType?.classFqName
+                ?.classFqName
             when (flowKind) {
-                FlowKind.STATE -> extensionFqName == stateFlowFqName
-                FlowKind.SHARED -> extensionFqName == sharedFlowFqName
+                FlowKind.STATE -> extensionFqName == mutableStateFlowFqName
+                FlowKind.SHARED -> extensionFqName == mutableSharedFlowFqName
             }
         }
 
     private fun flowKindOf(type: IrType?): FlowKind? {
         if (type == null) return null
-        return when (type.classFqName) {
-            stateFlowFqName -> FlowKind.STATE
-            sharedFlowFqName -> FlowKind.SHARED
+        val mutableState = pluginContext.referenceClass(mutableStateFlowClassId) ?: return null
+        val mutableShared = pluginContext.referenceClass(mutableSharedFlowClassId) ?: return null
+        return when {
+            type.isSubtypeOfClass(mutableState) -> FlowKind.STATE
+            type.isSubtypeOfClass(mutableShared) -> FlowKind.SHARED
             else -> null
         }
     }
