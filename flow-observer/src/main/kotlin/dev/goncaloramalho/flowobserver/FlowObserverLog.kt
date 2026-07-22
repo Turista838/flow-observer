@@ -1,11 +1,24 @@
 package dev.goncaloramalho.flowobserver
 
 internal object FlowObserverLog {
-    fun log(tag: String, message: String) {
-        val settings = FlowObserver.settings
-        if (!settings.enabled) return
+    fun shouldLog(
+        subscriptionLogging: SubscriptionLogging,
+        subscriptionCount: Int,
+    ): Boolean {
+        if (!FlowObserver.settings.enabled) return false
 
-        val logger = settings.logger
+        val onlyWhenSubscribed = when (subscriptionLogging) {
+            SubscriptionLogging.Default -> FlowObserver.settings.logOnlyWhenSubscribed
+            SubscriptionLogging.OnlyWhenSubscribed -> true
+            SubscriptionLogging.Always -> false
+        }
+
+        if (!onlyWhenSubscribed) return true
+        return subscriptionCount > 0
+    }
+
+    fun log(tag: String, message: String) {
+        val logger = FlowObserver.settings.logger
         if (logger != null) {
             logger.log(tag, message)
             return
@@ -20,5 +33,15 @@ internal object FlowObserverLog {
         } catch (_: Throwable) {
             println("I/$tag: $message")
         }
+    }
+
+    fun logIfAllowed(
+        tag: String,
+        message: String,
+        subscriptionLogging: SubscriptionLogging,
+        subscriptionCount: Int,
+    ) {
+        if (!shouldLog(subscriptionLogging, subscriptionCount)) return
+        log(tag, message)
     }
 }

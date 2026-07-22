@@ -3,20 +3,25 @@ package dev.goncaloramalho.flowobserver.compiler
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.ir.IrStatement
+import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irString
 import org.jetbrains.kotlin.ir.declarations.IrClass
+import org.jetbrains.kotlin.ir.declarations.IrEnumEntry
 import org.jetbrains.kotlin.ir.declarations.IrParameterKind
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrConst
 import org.jetbrains.kotlin.ir.expressions.IrConstructorCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
+import org.jetbrains.kotlin.ir.expressions.IrGetEnumValue
+import org.jetbrains.kotlin.ir.expressions.impl.IrGetEnumValueImpl
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.IrSimpleType
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.IrTypeProjection
 import org.jetbrains.kotlin.ir.types.classFqName
+import org.jetbrains.kotlin.ir.types.defaultType
 import org.jetbrains.kotlin.ir.types.isSubtypeOfClass
 import org.jetbrains.kotlin.ir.util.fqNameWhenAvailable
 import org.jetbrains.kotlin.ir.util.hasAnnotation
@@ -35,6 +40,9 @@ class FlowObserverIrTransformer(
 
     private val observeFlowAnnotationFqName =
         FqName("dev.goncaloramalho.flowobserver.ObserveFlow")
+
+    private val subscriptionLoggingClassId =
+        ClassId(FqName("dev.goncaloramalho.flowobserver"), Name.identifier("SubscriptionLogging"))
 
     private val addObservableCallableId =
         CallableId(
@@ -83,7 +91,7 @@ class FlowObserverIrTransformer(
         val addObservableSymbol = resolveAddObservable(flowKind)
             ?: return super.visitProperty(declaration)
 
-        val tag = declaration.resolveTag(parentClass)
+        val (tag, subscriptionLoggingName) = declaration.resolveObserveFlowArgs(parentClass)
         val typeArgument = (initializerExpression.type as? IrSimpleType)
             ?.arguments
             ?.filterIsInstance<IrTypeProjection>()
@@ -99,6 +107,7 @@ class FlowObserverIrTransformer(
         )
 
         val callee = addObservableSymbol.owner
+        var regularIndex = 0
         val wrapped: IrExpression = builder.irCall(addObservableSymbol).apply {
             type = initializerExpression.type
             if (typeArguments.isNotEmpty()) {
@@ -107,7 +116,11 @@ class FlowObserverIrTransformer(
             for ((index, parameter) in callee.parameters.withIndex()) {
                 arguments[index] = when (parameter.kind) {
                     IrParameterKind.ExtensionReceiver -> initializerExpression
-                    IrParameterKind.Regular -> builder.irString(tag)
+                    IrParameterKind.Regular -> when (regularIndex++) {
+                        0 -> builder.irString(tag)
+                        1 -> builder.irSubscriptionLogging(subscriptionLoggingName)
+                        else -> null
+                    }
                     else -> null
                 }
             }
@@ -122,6 +135,21 @@ class FlowObserverIrTransformer(
         return super.visitProperty(declaration)
     }
 
+    private fun IrBuilderWithScope.irSubscriptionLogging(entryName: String): IrExpression {
+        val enumClass = pluginContext.referenceClass(subscriptionLoggingClassId)
+            ?: error("SubscriptionLogging is not on the compilation classpath")
+        val entry = enumClass.owner.declarations
+            .filterIsInstance<IrEnumEntry>()
+            .firstOrNull { it.name.asString() == entryName }
+            ?: error("Unknown SubscriptionLogging.$entryName")
+        return IrGetEnumValueImpl(
+            startOffset = startOffset,
+            endOffset = endOffset,
+            type = enumClass.defaultType,
+            symbol = entry.symbol,
+        )
+    }
+
     private fun IrClass.extendsViewModel(): Boolean {
         val viewModel = pluginContext.referenceClass(viewModelClassId) ?: return true
         return isSubclassOf(viewModel.owner)
@@ -134,13 +162,29 @@ class FlowObserverIrTransformer(
         return owner.fqNameWhenAvailable?.parent()?.asString() == "dev.goncaloramalho.flowobserver"
     }
 
-    private fun IrProperty.resolveTag(parentClass: IrClass): String {
+    private fun IrProperty.resolveObserveFlowArgs(parentClass: IrClass): Pair<String, String> {
         val annotation = annotations.firstOrNull { it.isObserveFlowAnnotation() }
-            ?: return defaultTag(parentClass)
+            ?: return defaultTag(parentClass) to SubscriptionLoggingNames.DEFAULT
 
-        val tagArg = annotation.arguments.firstOrNull() as? IrConst
-        val tag = tagArg?.value as? String
-        return if (tag.isNullOrBlank()) defaultTag(parentClass) else tag
+        var tag: String? = null
+        var subscriptionLogging = SubscriptionLoggingNames.DEFAULT
+
+        val constructor = annotation.symbol.owner
+        for ((index, parameter) in constructor.parameters.withIndex()) {
+            val argument = annotation.arguments.getOrNull(index) ?: continue
+            when (parameter.name.asString()) {
+                "tag" -> tag = (argument as? IrConst)?.value as? String
+                "subscriptionLogging" -> {
+                    val enumGet = argument as? IrGetEnumValue
+                    if (enumGet != null) {
+                        subscriptionLogging = enumGet.symbol.owner.name.asString()
+                    }
+                }
+            }
+        }
+
+        val resolvedTag = if (tag.isNullOrBlank()) defaultTag(parentClass) else tag
+        return resolvedTag to subscriptionLogging
     }
 
     private fun IrConstructorCall.isObserveFlowAnnotation(): Boolean =
@@ -173,4 +217,8 @@ class FlowObserverIrTransformer(
     }
 
     private enum class FlowKind { STATE, SHARED }
+
+    private object SubscriptionLoggingNames {
+        const val DEFAULT = "Default"
+    }
 }

@@ -1,8 +1,8 @@
 # flow-observer
 
-Kotlin library + compiler plugin for observing `MutableStateFlow` and `MutableSharedFlow` writes in Android ViewModels (BlocObserver-style).
+Kotlin library + compiler plugin for observing `MutableStateFlow` and `MutableSharedFlow` writes in Android ViewModels.
 
-Annotate the **mutable** backing properties. The compiler plugin injects `.addObservable(tag)` so each `value` / `emit` / `update` / `tryEmit` is logged **once on the emit side** — not once per collector.
+Annotate the **mutable** backing properties. The compiler plugin injects `.addObservable(...)` so each `value` / `emit` / `update` / `tryEmit` is logged **once on the emit side** — not once per collector.
 
 ## Setup
 
@@ -24,7 +24,7 @@ class LoginViewModel : ViewModel() {
 
     @ObserveFlow
     private val _uiState = MutableStateFlow(LoginUiState())
-    // compiler rewrites to: MutableStateFlow(...).addObservable(tag = "LoginViewModel._uiState")
+    // → MutableStateFlow(...).addObservable("LoginViewModel._uiState", SubscriptionLogging.Default)
 
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 }
@@ -33,17 +33,34 @@ class LoginViewModel : ViewModel() {
 - Annotate **`MutableStateFlow` / `MutableSharedFlow`** (typically the private `_uiState` / `_events`).
 - Expose read-only `asStateFlow()` / `asSharedFlow()` as usual (no annotation on those).
 - If `tag` is omitted, defaults to `ClassName.propertyName`.
-- You may call `addObservable(tag)` manually; the plugin skips already-wrapped initializers.
+- You may call `addObservable(tag, subscriptionLogging)` manually; the plugin skips already-wrapped initializers.
 - `stateIn` / `shareIn` results are **not** supported (no mutable write path to hook).
 
 ### When logging runs
 
-| Situation | Logs? |
-|-----------|--------|
-| You write via `value` / `update` / `emit` / `tryEmit` on the annotated mutable | **Yes** (once per write) |
-| Many collectors listen to `asStateFlow()` / `asSharedFlow()` | Still **one** log per write |
-| Nobody is collecting | Still **yes** (same as BlocObserver) |
-| `FlowObserverSettings.enabled = false` | **No** |
+By default (`SubscriptionLogging.Default` + `logOnlyWhenSubscribed = false`): **log every write**, even with zero collectors.
+
+| Situation | Default settings | `logOnlyWhenSubscribed = true` |
+|-----------|------------------|--------------------------------|
+| Write on annotated mutable | **Yes** (once) | Only if `subscriptionCount > 0` |
+| Many collectors | Still **one** log per write | Still **one** log per write |
+| `enabled = false` | **No** | **No** |
+
+Per-flow override via annotation (wins over settings):
+
+```kotlin
+@ObserveFlow(subscriptionLogging = SubscriptionLogging.OnlyWhenSubscribed)
+private val _uiState = MutableStateFlow(...)
+
+@ObserveFlow(subscriptionLogging = SubscriptionLogging.Always)
+private val _events = MutableSharedFlow<Event>()
+```
+
+| `subscriptionLogging` | Meaning |
+|-----------------------|---------|
+| `Default` | Use `FlowObserverSettings.logOnlyWhenSubscribed` at log time |
+| `OnlyWhenSubscribed` | Always require collectors (ignore settings) |
+| `Always` | Always log writes (ignore settings) |
 
 ### What gets logged
 
@@ -63,6 +80,7 @@ class MyApp : Application() {
         FlowObserver.configure(
             FlowObserverSettings(
                 enabled = BuildConfig.DEBUG,
+                logOnlyWhenSubscribed = false, // log every write by default
                 logger = FlowObserverLogger { tag, message -> Log.d(tag, message) },
             ),
         )
@@ -70,13 +88,14 @@ class MyApp : Application() {
 }
 ```
 
-If you never call `configure`, defaults apply: observation is **enabled**, and messages go to **`Log.i`** on Android (or stdout on JVM).
+If you never call `configure`, defaults apply: observation is **enabled**, `logOnlyWhenSubscribed` is **false**, and messages go to **`Log.i`** on Android (or stdout on JVM).
 
 ### `FlowObserverSettings`
 
 | Option | Default | Description |
 |--------|---------|-------------|
 | `enabled` | `true` | When `false`, writes are not logged. Use `BuildConfig.DEBUG` to keep release builds quiet. |
+| `logOnlyWhenSubscribed` | `false` | When `true`, flows with `SubscriptionLogging.Default` log only if someone is collecting. |
 | `logger` | `null` | Custom log sink. When `null`, uses `Log.i` on Android or stdout on JVM. |
 
 ## Sample
