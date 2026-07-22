@@ -16,7 +16,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,10 +31,20 @@ fun PlaygroundScreen(
     username: String,
     onLogout: () -> Unit,
     onOpenScreenScopedVm: () -> Unit,
+    onOpenWhileSubscribed: () -> Unit,
     viewModel: PlaygroundViewModel = viewModel(),
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    var lastTick by remember { mutableStateOf<Long?>(null) }
+    var lastPulse by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(viewModel) {
+        viewModel.ticks.collect { lastTick = it }
+    }
+    LaunchedEffect(viewModel) {
+        viewModel.pulses.collect { lastPulse = it }
+    }
 
     Column(
         modifier = modifier
@@ -44,6 +58,9 @@ fun PlaygroundScreen(
 
         FilledTonalButton(onClick = onOpenScreenScopedVm, modifier = Modifier.fillMaxWidth()) {
             Text("Open scoped-VM screen")
+        }
+        FilledTonalButton(onClick = onOpenWhileSubscribed, modifier = Modifier.fillMaxWidth()) {
+            Text("Open WhileSubscribed screen")
         }
 
         HorizontalDivider()
@@ -75,6 +92,7 @@ fun PlaygroundScreen(
         HorizontalDivider()
 
         Text(text = "SharedFlow — ticks")
+        Text(text = "Last tick: ${lastTick?.toString() ?: "—"}")
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -98,6 +116,7 @@ fun PlaygroundScreen(
         HorizontalDivider()
 
         Text(text = "SharedFlow — pulses")
+        Text(text = "Last pulse: ${lastPulse ?: "—"}")
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),

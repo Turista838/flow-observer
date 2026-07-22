@@ -17,6 +17,10 @@ kotlin {
     }
 }
 
+dependencies {
+    api(libs.kotlinx.coroutines.core)
+}
+
 mavenPublishing {
     publishToMavenCentral()
     signAllPublications()

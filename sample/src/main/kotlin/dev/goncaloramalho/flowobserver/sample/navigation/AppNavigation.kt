@@ -16,10 +16,13 @@ import dev.goncaloramalho.flowobserver.sample.login.LoginScreen
 import dev.goncaloramalho.flowobserver.sample.playground.PlaygroundScreen
 import dev.goncaloramalho.flowobserver.sample.playground.PlaygroundViewModel
 import dev.goncaloramalho.flowobserver.sample.screenscoped.ScreenScopedVmScreen
+import dev.goncaloramalho.flowobserver.sample.whilesubscribed.WhileSubscribedScreen
+import dev.goncaloramalho.flowobserver.sample.whilesubscribed.WhileSubscribedViewModel
 
 private object Routes {
     const val PLAYGROUND = "playground"
     const val SCREEN_SCOPED_VM = "screen_scoped_vm"
+    const val WHILE_SUBSCRIBED = "while_subscribed"
 }
 
 @Composable
@@ -36,8 +39,9 @@ fun AppNavigation(modifier: Modifier = Modifier) {
 
     val navController = rememberNavController()
     val activity = LocalContext.current as ComponentActivity
-    // Keep playground Activity-scoped so state survives opening the screen-scoped destination.
+    // Keep playground / WhileSubscribed Activity-scoped so VMs survive navigation / UI detach.
     val playgroundViewModel: PlaygroundViewModel = viewModel(viewModelStoreOwner = activity)
+    val whileSubscribedViewModel: WhileSubscribedViewModel = viewModel(viewModelStoreOwner = activity)
 
     NavHost(
         navController = navController,
@@ -49,12 +53,19 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                 username = username!!,
                 viewModel = playgroundViewModel,
                 onOpenScreenScopedVm = { navController.navigate(Routes.SCREEN_SCOPED_VM) },
+                onOpenWhileSubscribed = { navController.navigate(Routes.WHILE_SUBSCRIBED) },
                 onLogout = { username = null },
             )
         }
         composable(Routes.SCREEN_SCOPED_VM) {
             // Default viewModel() uses this NavBackStackEntry as owner → screen-scoped.
             ScreenScopedVmScreen(
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(Routes.WHILE_SUBSCRIBED) {
+            WhileSubscribedScreen(
+                viewModel = whileSubscribedViewModel,
                 onBack = { navController.popBackStack() },
             )
         }

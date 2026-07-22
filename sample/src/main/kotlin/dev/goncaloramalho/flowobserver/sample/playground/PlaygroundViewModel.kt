@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 
 data class PlaygroundUiState(
     val counter: Int = 0,
@@ -26,19 +27,15 @@ class PlaygroundViewModel : ViewModel() {
     val uiState: StateFlow<PlaygroundUiState> = _uiState.asStateFlow()
 
     private val _ticks = MutableSharedFlow<Long>(extraBufferCapacity = 1)
-    @ObserveFlow(tag = "Playground.ticks")
+    @ObserveFlow(tag = "Playground_ticks")
     val ticks: SharedFlow<Long> = _ticks.asSharedFlow()
 
     private val _pulses = MutableSharedFlow<String>(extraBufferCapacity = 8)
-    @ObserveFlow(tag = "Playground.pulses")
+    @ObserveFlow(tag = "Playground_pulses")
     val pulses: SharedFlow<String> = _pulses.asSharedFlow()
 
     private var tickerJob: Job? = null
     private var pulseCount = 0
-
-    init {
-        attachFlowObserver()
-    }
 
     fun increment() {
         _uiState.value = _uiState.value.copy(counter = _uiState.value.counter + 1)
@@ -94,7 +91,7 @@ class PlaygroundViewModel : ViewModel() {
     fun simulateLoad() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(statusMessage = "Loading…")
-            delay(800)
+            delay(2.seconds)
             _uiState.value = _uiState.value.copy(statusMessage = "Done")
         }
     }

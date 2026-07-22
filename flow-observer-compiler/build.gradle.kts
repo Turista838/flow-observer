@@ -14,12 +14,12 @@ java {
 kotlin {
     compilerOptions {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+        optIn.add("org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi")
     }
 }
 
 dependencies {
-    implementation(project(":flow-observer"))
-    implementation("com.google.devtools.ksp:symbol-processing-api:${libs.versions.ksp.get()}")
+    compileOnly("org.jetbrains.kotlin:kotlin-compiler-embeddable:${libs.versions.kotlin.get()}")
 }
 
 mavenPublishing {
