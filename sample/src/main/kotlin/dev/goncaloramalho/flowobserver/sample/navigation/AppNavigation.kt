@@ -16,13 +16,13 @@ import dev.goncaloramalho.flowobserver.sample.login.LoginScreen
 import dev.goncaloramalho.flowobserver.sample.playground.PlaygroundScreen
 import dev.goncaloramalho.flowobserver.sample.playground.PlaygroundViewModel
 import dev.goncaloramalho.flowobserver.sample.screenscoped.ScreenScopedVmScreen
-import dev.goncaloramalho.flowobserver.sample.whilesubscribed.WhileSubscribedScreen
-import dev.goncaloramalho.flowobserver.sample.whilesubscribed.WhileSubscribedViewModel
+import dev.goncaloramalho.flowobserver.sample.subscriptionlogging.SubscriptionLoggingScreen
+import dev.goncaloramalho.flowobserver.sample.subscriptionlogging.SubscriptionLoggingViewModel
 
 private object Routes {
     const val PLAYGROUND = "playground"
     const val SCREEN_SCOPED_VM = "screen_scoped_vm"
-    const val WHILE_SUBSCRIBED = "while_subscribed"
+    const val SUBSCRIPTION_LOGGING = "subscription_logging"
 }
 
 @Composable
@@ -39,9 +39,10 @@ fun AppNavigation(modifier: Modifier = Modifier) {
 
     val navController = rememberNavController()
     val activity = LocalContext.current as ComponentActivity
-    // Keep playground / WhileSubscribed Activity-scoped so VMs survive navigation / UI detach.
+    // Keep playground / subscription-logging Activity-scoped so VMs survive navigation / UI detach.
     val playgroundViewModel: PlaygroundViewModel = viewModel(viewModelStoreOwner = activity)
-    val whileSubscribedViewModel: WhileSubscribedViewModel = viewModel(viewModelStoreOwner = activity)
+    val subscriptionLoggingViewModel: SubscriptionLoggingViewModel =
+        viewModel(viewModelStoreOwner = activity)
 
     NavHost(
         navController = navController,
@@ -53,7 +54,7 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                 username = username!!,
                 viewModel = playgroundViewModel,
                 onOpenScreenScopedVm = { navController.navigate(Routes.SCREEN_SCOPED_VM) },
-                onOpenWhileSubscribed = { navController.navigate(Routes.WHILE_SUBSCRIBED) },
+                onOpenSubscriptionLogging = { navController.navigate(Routes.SUBSCRIPTION_LOGGING) },
                 onLogout = { username = null },
             )
         }
@@ -63,9 +64,9 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                 onBack = { navController.popBackStack() },
             )
         }
-        composable(Routes.WHILE_SUBSCRIBED) {
-            WhileSubscribedScreen(
-                viewModel = whileSubscribedViewModel,
+        composable(Routes.SUBSCRIPTION_LOGGING) {
+            SubscriptionLoggingScreen(
+                viewModel = subscriptionLoggingViewModel,
                 onBack = { navController.popBackStack() },
             )
         }

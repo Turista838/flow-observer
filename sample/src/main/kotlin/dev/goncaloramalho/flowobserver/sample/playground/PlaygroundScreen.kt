@@ -31,7 +31,7 @@ fun PlaygroundScreen(
     username: String,
     onLogout: () -> Unit,
     onOpenScreenScopedVm: () -> Unit,
-    onOpenWhileSubscribed: () -> Unit,
+    onOpenSubscriptionLogging: () -> Unit,
     viewModel: PlaygroundViewModel = viewModel(),
     modifier: Modifier = Modifier,
 ) {
@@ -59,8 +59,8 @@ fun PlaygroundScreen(
         FilledTonalButton(onClick = onOpenScreenScopedVm, modifier = Modifier.fillMaxWidth()) {
             Text("Open scoped-VM screen")
         }
-        FilledTonalButton(onClick = onOpenWhileSubscribed, modifier = Modifier.fillMaxWidth()) {
-            Text("Open WhileSubscribed screen")
+        FilledTonalButton(onClick = onOpenSubscriptionLogging, modifier = Modifier.fillMaxWidth()) {
+            Text("Open subscription-logging demo")
         }
 
         HorizontalDivider()

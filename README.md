@@ -100,7 +100,7 @@ If you never call `configure`, defaults apply: observation is **enabled**, `logO
 
 ## Sample
 
-The `:sample` module shows Activity-scoped ViewModels, a Nav destination with a screen-scoped ViewModel, and configuration with `BuildConfig.DEBUG` plus a `Log.d` logger.
+The `:sample` module shows Activity-scoped ViewModels, a Nav destination with a screen-scoped ViewModel, a **subscription-logging** demo (`logOnlyWhenSubscribed` vs `SubscriptionLogging.Always`), and configuration with `BuildConfig.DEBUG` plus a `Log.d` logger.
 
 ## License
 
