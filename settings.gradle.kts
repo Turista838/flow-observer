@@ -25,6 +25,13 @@ dependencyResolutionManagement {
 rootProject.name = "flow-observer"
 include(
     ":flow-observer",
-    ":flow-observer-compiler",
+    ":flow-observer-compiler-2.2.10",
+    ":flow-observer-compiler-2.2.21",
     ":sample",
 )
+
+// Thin versioned modules; shared IR sources stay in flow-observer-compiler/src.
+project(":flow-observer-compiler-2.2.10").projectDir =
+    file("flow-observer-compiler/2.2.10")
+project(":flow-observer-compiler-2.2.21").projectDir =
+    file("flow-observer-compiler/2.2.21")

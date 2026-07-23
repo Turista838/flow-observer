@@ -9,11 +9,15 @@ Annotate the **mutable** backing properties. The compiler plugin injects `.addOb
 ```kotlin
 dependencies {
     implementation("dev.goncaloramalho:flow-observer:1.0.0")
-    kotlinCompilerPluginClasspath("dev.goncaloramalho:flow-observer-compiler:1.0.0")
+    // Pick the compiler artifact that matches your project's Kotlin version exactly.
+    kotlinCompilerPluginClasspath("dev.goncaloramalho:flow-observer-compiler-2.2.10:1.0.0")
+    // kotlinCompilerPluginClasspath("dev.goncaloramalho:flow-observer-compiler-2.2.21:1.0.0")
 }
 ```
 
-Use a Kotlin version compatible with the compiler plugin (this project targets Kotlin **2.2.x**).
+The runtime library is shared. The compiler plugin is **versioned per Kotlin patch** (`2.2.10`, `2.2.21`, …) because it loads into the host compiler — mismatched patches can fail at compile time.
+
+In this repo, shared IR sources live under `flow-observer-compiler/src`, and thin modules under `flow-observer-compiler/2.2.10` / `2.2.21` each compile those sources against the matching `kotlin-compiler-embeddable` and publish as `flow-observer-compiler-<kotlin>`.
 
 ## Usage
 

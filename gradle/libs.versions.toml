@@ -10,6 +10,10 @@ coroutines = "1.10.2"
 activityCompose = "1.13.0"
 navigationCompose = "2.8.9"
 kotlin = "2.2.10"
+# Sample KGP only — must match :flow-observer-compiler-2.2.21
+kotlinSample = "2.2.21"
+# Compiler-plugin variant only — must match kotlin-compiler-embeddable for that module.
+kotlinCompiler2221 = "2.2.21"
 composeBom = "2026.02.01"
 mavenPublish = "0.34.0"
 
@@ -36,8 +40,8 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+# Sample uses kotlinSample. JVM libs / compiler modules use kotlin-jvm at kotlin (2.2.10).
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinSample" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlinSample" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
-
