@@ -12,8 +12,6 @@ navigationCompose = "2.8.9"
 kotlin = "2.2.10"
 # Sample KGP only — must match :flow-observer-compiler-2.2.21
 kotlinSample = "2.2.21"
-# Compiler-plugin variant only — must match kotlin-compiler-embeddable for that module.
-kotlinCompiler2221 = "2.2.21"
 composeBom = "2026.02.01"
 mavenPublish = "0.34.0"
 

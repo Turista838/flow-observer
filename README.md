@@ -9,15 +9,23 @@ Annotate the **mutable** backing properties. The compiler plugin injects `.addOb
 ```kotlin
 dependencies {
     implementation("dev.goncaloramalho:flow-observer:1.0.0")
-    // Pick the compiler artifact that matches your project's Kotlin version exactly.
-    kotlinCompilerPluginClasspath("dev.goncaloramalho:flow-observer-compiler-2.2.10:1.0.0")
-    // kotlinCompilerPluginClasspath("dev.goncaloramalho:flow-observer-compiler-2.2.21:1.0.0")
+    // Pick the compiler artifact for your Kotlin version (see table below).
+    kotlinCompilerPluginClasspath("dev.goncaloramalho:flow-observer-compiler-2.2.21:1.0.0")
 }
 ```
 
-The runtime library is shared. The compiler plugin is **versioned per Kotlin patch** (`2.2.10`, `2.2.21`, …) because it loads into the host compiler — mismatched patches can fail at compile time.
+The runtime library is shared. The compiler plugin is **versioned per compatible Kotlin line** because it loads into the host compiler.
 
-In this repo, shared IR sources live under `flow-observer-compiler/src`, and thin modules under `flow-observer-compiler/2.2.10` / `2.2.21` each compile those sources against the matching `kotlin-compiler-embeddable` and publish as `flow-observer-compiler-<kotlin>`.
+| App Kotlin | Compiler artifact |
+|------------|-------------------|
+| 2.0.0, 2.0.10 | `flow-observer-compiler-2.0.10` |
+| 2.0.20, 2.0.21 | `flow-observer-compiler-2.0.21` |
+| 2.1.0 – 2.1.21 | `flow-observer-compiler-2.1.10` |
+| 2.2.0, 2.2.10 | `flow-observer-compiler-2.2.10` |
+| 2.2.20, 2.2.21 | `flow-observer-compiler-2.2.21` |
+| 2.3.0 – 2.3.21 | `flow-observer-compiler-2.3.21` |
+
+In this repo, IR/registrar sources are split under `flow-observer-compiler/src/` (`common`, `ir-legacy`, `ir-legacy21`, `ir-modern`, `registrar`, `registrar23`), and thin modules under `flow-observer-compiler/<kotlin>/` publish as `flow-observer-compiler-<kotlin>`.
 
 ## Usage
 

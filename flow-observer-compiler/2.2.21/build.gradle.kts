@@ -2,13 +2,12 @@ import org.gradle.plugins.signing.SigningExtension
 
 plugins {
     id("java-library")
-    // KGP must match the rest of this Gradle build (only one org.jetbrains.kotlin.jvm
-    // version is allowed). The *host* Kotlin this jar targets is pinned via embeddable below.
+    // One KGP version per Gradle build; host Kotlin for this jar is the embeddable below.
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.maven.publish)
 }
 
-val kotlinCompilerVersion = libs.versions.kotlinCompiler2221.get()
+val kotlinCompilerVersion = "2.2.21"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -22,11 +21,13 @@ kotlin {
     }
 }
 
-// Shared plugin sources live one level up; this module only pins the embeddable version.
+// Shared roots under flow-observer-compiler/src; family selects IR + registrar variants.
 sourceSets {
     main {
-        kotlin.srcDir("../src/main/kotlin")
-        resources.srcDir("../src/main/resources")
+        kotlin.srcDir("../src/common/kotlin")
+        resources.srcDir("../src/common/resources")
+        kotlin.srcDir("../src/ir-modern/kotlin")
+        kotlin.srcDir("../src/registrar/kotlin")
     }
 }
 

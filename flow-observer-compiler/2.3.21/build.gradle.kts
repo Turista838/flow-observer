@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.maven.publish)
 }
 
-val kotlinCompilerVersion = "2.2.10"
+val kotlinCompilerVersion = "2.3.21"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -27,7 +27,7 @@ sourceSets {
         kotlin.srcDir("../src/common/kotlin")
         resources.srcDir("../src/common/resources")
         kotlin.srcDir("../src/ir-modern/kotlin")
-        kotlin.srcDir("../src/registrar/kotlin")
+        kotlin.srcDir("../src/registrar23/kotlin")
     }
 }
 
