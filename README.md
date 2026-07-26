@@ -24,6 +24,7 @@ The runtime library is shared. The compiler plugin is **versioned per compatible
 | 2.2.0, 2.2.10 | `flow-observer-compiler-2.2.10` |
 | 2.2.20, 2.2.21 | `flow-observer-compiler-2.2.21` |
 | 2.3.0 – 2.3.21 | `flow-observer-compiler-2.3.21` |
+| 2.4.0, 2.4.10 | `flow-observer-compiler-2.4.10` |
 
 In this repo, IR/registrar sources are split under `flow-observer-compiler/src/` (`common`, `ir-legacy`, `ir-legacy21`, `ir-modern`, `registrar`, `registrar23`), and thin modules under `flow-observer-compiler/<kotlin>/` publish as `flow-observer-compiler-<kotlin>`.
 

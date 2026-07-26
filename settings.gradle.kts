@@ -31,6 +31,7 @@ include(
     ":flow-observer-compiler-2.2.10",
     ":flow-observer-compiler-2.2.21",
     ":flow-observer-compiler-2.3.21",
+    ":flow-observer-compiler-2.4.10",
     ":sample",
 )
 
@@ -41,3 +42,4 @@ project(":flow-observer-compiler-2.1.10").projectDir = file("flow-observer-compi
 project(":flow-observer-compiler-2.2.10").projectDir = file("flow-observer-compiler/2.2.10")
 project(":flow-observer-compiler-2.2.21").projectDir = file("flow-observer-compiler/2.2.21")
 project(":flow-observer-compiler-2.3.21").projectDir = file("flow-observer-compiler/2.3.21")
+project(":flow-observer-compiler-2.4.10").projectDir = file("flow-observer-compiler/2.4.10")
