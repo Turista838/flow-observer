@@ -58,14 +58,13 @@ private val _events = MutableSharedFlow<Event>()
 
 ## Setup
 
+Android only. Requires Kotlin **2.0.0–2.4.10**.
+
 ```kotlin
 plugins {
-    id("org.jetbrains.kotlin.android") version "2.2.21"
     id("dev.goncaloramalho.flow-observer") version "2.0.0"
 }
 ```
-
-Supported Kotlin versions: **2.0.0–2.4.10** (stable).
 
 ## Configuration
 
