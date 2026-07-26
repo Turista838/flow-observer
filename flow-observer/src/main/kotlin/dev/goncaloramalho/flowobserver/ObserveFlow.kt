@@ -1,15 +1,20 @@
 package dev.goncaloramalho.flowobserver
 
 /**
- * Marks a public `StateFlow` or `SharedFlow` property on a ViewModel for observation.
+ * Marks a `MutableStateFlow` or `MutableSharedFlow` property for observation.
  *
- * Call the generated `attachFlowObserver()` from the ViewModel `init` block so collectors
- * bind to the correct instance (Activity-, Fragment-, or navigation-scoped).
+ * The Flow Observer compiler plugin rewrites the property initializer to chain
+ * [addObservable], so writes (`value` / `emit` / `update` / …) are logged once per emission.
  *
- * @property tag Logcat tag. When blank, defaults to `ViewModelName.propertyName`.
+ * Annotate the **mutable** backing property, then expose `asStateFlow()` / `asSharedFlow()` as usual.
+ *
+ * @property tag Logcat tag. When blank, defaults to `ClassName.propertyName`.
+ * @property subscriptionLogging Per-flow policy; [SubscriptionLogging.Default] follows
+ * [FlowObserverSettings.logOnlyWhenSubscribed]. Explicit values override the global setting.
  */
 @Target(AnnotationTarget.PROPERTY)
-@Retention(AnnotationRetention.SOURCE)
+@Retention(AnnotationRetention.BINARY)
 annotation class ObserveFlow(
     val tag: String = "",
+    val subscriptionLogging: SubscriptionLogging = SubscriptionLogging.Default,
 )

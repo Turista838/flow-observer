@@ -16,13 +16,9 @@ data class ScreenScopedUiState(
  */
 class ScreenScopedViewModel : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ScreenScopedUiState())
     @ObserveFlow(tag = "ScreenScopedViewModel.uiState")
+    private val _uiState = MutableStateFlow(ScreenScopedUiState())
     val uiState: StateFlow<ScreenScopedUiState> = _uiState.asStateFlow()
-
-    init {
-        attachFlowObserver()
-    }
 
     fun tap() {
         _uiState.value = _uiState.value.copy(taps = _uiState.value.taps + 1)

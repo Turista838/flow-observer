@@ -16,10 +16,13 @@ import dev.goncaloramalho.flowobserver.sample.login.LoginScreen
 import dev.goncaloramalho.flowobserver.sample.playground.PlaygroundScreen
 import dev.goncaloramalho.flowobserver.sample.playground.PlaygroundViewModel
 import dev.goncaloramalho.flowobserver.sample.screenscoped.ScreenScopedVmScreen
+import dev.goncaloramalho.flowobserver.sample.subscriptionlogging.SubscriptionLoggingScreen
+import dev.goncaloramalho.flowobserver.sample.subscriptionlogging.SubscriptionLoggingViewModel
 
 private object Routes {
     const val PLAYGROUND = "playground"
     const val SCREEN_SCOPED_VM = "screen_scoped_vm"
+    const val SUBSCRIPTION_LOGGING = "subscription_logging"
 }
 
 @Composable
@@ -36,8 +39,10 @@ fun AppNavigation(modifier: Modifier = Modifier) {
 
     val navController = rememberNavController()
     val activity = LocalContext.current as ComponentActivity
-    // Keep playground Activity-scoped so state survives opening the screen-scoped destination.
+    // Keep playground / subscription-logging Activity-scoped so VMs survive navigation / UI detach.
     val playgroundViewModel: PlaygroundViewModel = viewModel(viewModelStoreOwner = activity)
+    val subscriptionLoggingViewModel: SubscriptionLoggingViewModel =
+        viewModel(viewModelStoreOwner = activity)
 
     NavHost(
         navController = navController,
@@ -49,12 +54,19 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                 username = username!!,
                 viewModel = playgroundViewModel,
                 onOpenScreenScopedVm = { navController.navigate(Routes.SCREEN_SCOPED_VM) },
+                onOpenSubscriptionLogging = { navController.navigate(Routes.SUBSCRIPTION_LOGGING) },
                 onLogout = { username = null },
             )
         }
         composable(Routes.SCREEN_SCOPED_VM) {
             // Default viewModel() uses this NavBackStackEntry as owner → screen-scoped.
             ScreenScopedVmScreen(
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(Routes.SUBSCRIPTION_LOGGING) {
+            SubscriptionLoggingScreen(
+                viewModel = subscriptionLoggingViewModel,
                 onBack = { navController.popBackStack() },
             )
         }

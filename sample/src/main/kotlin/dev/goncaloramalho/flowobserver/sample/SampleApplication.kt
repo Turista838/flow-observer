@@ -12,6 +12,7 @@ class SampleApplication : Application() {
         FlowObserver.configure(
             FlowObserverSettings(
                 enabled = BuildConfig.DEBUG,
+                logOnlyWhenSubscribed = false,
                 logger = FlowObserverLogger { tag, message -> Log.d(tag, message) },
             ),
         )
