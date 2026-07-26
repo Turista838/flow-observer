@@ -24,7 +24,6 @@ import org.jetbrains.kotlin.ir.types.defaultType
 import org.jetbrains.kotlin.ir.types.isSubtypeOfClass
 import org.jetbrains.kotlin.ir.util.fqNameWhenAvailable
 import org.jetbrains.kotlin.ir.util.hasAnnotation
-import org.jetbrains.kotlin.ir.util.isSubclassOf
 import org.jetbrains.kotlin.ir.util.parentClassOrNull
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
 import org.jetbrains.kotlin.name.CallableId
@@ -62,9 +61,6 @@ class FlowObserverIrTransformer(
     private val mutableStateFlowFqName = mutableStateFlowClassId.asSingleFqName()
     private val mutableSharedFlowFqName = mutableSharedFlowClassId.asSingleFqName()
 
-    private val viewModelClassId =
-        ClassId(FqName("androidx.lifecycle"), Name.identifier("ViewModel"))
-
     override fun visitProperty(declaration: IrProperty): IrStatement {
         if (!declaration.hasAnnotation(observeFlowAnnotationFqName)) {
             return super.visitProperty(declaration)
@@ -72,10 +68,6 @@ class FlowObserverIrTransformer(
 
         val parentClass = declaration.parentClassOrNull
             ?: return super.visitProperty(declaration)
-
-        if (!parentClass.extendsViewModel()) {
-            return super.visitProperty(declaration)
-        }
 
         val field = declaration.backingField
         val initializerExpression = field?.initializer?.expression
@@ -141,11 +133,6 @@ class FlowObserverIrTransformer(
             type = enumClass.defaultType,
             symbol = entry.symbol,
         )
-    }
-
-    private fun IrClass.extendsViewModel(): Boolean {
-        val viewModel = pluginContext.referenceClass(viewModelClassId) ?: return true
-        return isSubclassOf(viewModel.owner)
     }
 
     private fun IrExpression.isAlreadyAddObservable(): Boolean {

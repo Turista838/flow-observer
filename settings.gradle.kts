@@ -1,4 +1,5 @@
 pluginManagement {
+    includeBuild("flow-observer-gradle-plugin")
     repositories {
         google {
             content {

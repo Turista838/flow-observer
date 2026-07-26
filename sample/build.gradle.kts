@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("dev.goncaloramalho.flow-observer")
 }
 
 android {
@@ -44,10 +45,6 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":flow-observer"))
-    // Must match the sample's Kotlin (2.2.21).
-    kotlinCompilerPluginClasspath(project(":flow-observer-compiler-2.2.21"))
-
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
